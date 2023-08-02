@@ -1,6 +1,10 @@
+import os
 import sys
+import time
+from fileinput import filename
 from utils.token import verify_token
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
+from py_pdf_parser.loaders import load_file
 
 app = Flask(__name__)
 
@@ -11,7 +15,24 @@ def check_token_callback():
         
     except(Exception):
         return jsonify(error = "missing a valid token"), 401
+    
+@app.route('/check')
+def check():
+    return jsonify(data = "Hello world!")
 
-@app.route('/')
+## TODO: Filter parsed content, remove unwanted items
+@app.route('/', methods = ['POST'])
 def parser():
-    return jsonify(data = "Hello World!")
+    f = request.files['pdf']
+    fname = str(time.time_ns()) + '-' + f.filename
+    f.save(fname)
+    
+    document = load_file(fname)
+    text = ""
+    
+    for x in document.elements:
+        text += x.text()
+    
+    os.remove(fname)
+    
+    return jsonify(data = text)
