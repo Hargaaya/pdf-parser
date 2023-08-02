@@ -1,5 +1,5 @@
 import sys
-from utils import verify_token
+from utils.token import verify_token
 from flask import Flask, jsonify
 
 app = Flask(__name__)
